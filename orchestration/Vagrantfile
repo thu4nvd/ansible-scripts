@@ -1,0 +1,50 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # General Vagrant VM configuration.
+  config.vm.box = "centos/7"
+  config.ssh.insert_key = false
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.provider :virtualbox do |v|
+    v.memory = 256
+    v.linked_clone = true
+  end
+
+  # Application server 1.
+  config.vm.define "app1" do |app|
+    app.vm.hostname = "orc-app1.dev"
+    app.vm.network :private_network, ip: "192.168.33.4"
+	app.vm.provision "shell" do |shell|
+       shell.path = "vagrant/bootstrap.sh"
+    end
+    app.vm.provision "shell", run: "always", inline:"sudo ifup eth1"
+
+  end
+
+  # Application server 2.
+  config.vm.define "app2" do |app|
+    app.vm.hostname = "orc-app2.dev"
+    app.vm.network :private_network, ip: "192.168.33.5"
+	app.vm.provision "shell" do |shell|
+       shell.path = "vagrant/bootstrap.sh"
+    end
+    app.vm.provision "shell", run: "always", inline:"sudo ifup eth1"
+  end
+
+  # Database server.
+  config.vm.define "db" do |db|
+    db.vm.hostname = "orc-db.dev"
+    db.vm.network :private_network, ip: "192.168.33.6"
+	db.vm.provision "shell" do |shell|
+       shell.path = "vagrant/bootstrap.sh"
+    end
+    db.vm.provision "shell", run: "always", inline:"sudo ifup eth1"
+  end
+
+  ## synced folder configuration
+  config.vm.synced_folder "vagrant", "/vagrant", type: "rsync"
+
+end
