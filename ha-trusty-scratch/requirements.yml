@@ -1,0 +1,3 @@
+- src: https://github.com/leucos/ansible-pacemaker-corosync
+  path: /etc/ansible/roles/
+  name: pacemaker

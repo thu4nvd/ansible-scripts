@@ -1,0 +1,80 @@
+---
+- hosts: all
+
+  vars:
+    pacemaker_corosync_group: nodes_members
+    pacemaker_corosync_ring_interface: eth1 
+
+  tasks:
+    - name: Checking that required variables are set
+      fail: msg="{{ item }} is not defined"
+      when: not item
+      with_items:
+        - pacemaker_corosync_group
+        - pacemaker_corosync_ring_interface
+
+    - name: add Jessie-backport repo
+      apt_repository:
+        repo: deb http://deb.debian.org/debian jessie-backports main 
+        state: present
+        filename: 'jessie-backports'
+
+    - name: Update the repository cache and install package pacemaker and crmsh 
+      apt: name={{item}} state=present
+      with_items:
+        - pacemaker
+        - crmsh
+        - nginx
+
+    - name: Disable nginx and pacemaker by default, need to start by hand if need
+      service: name={{item}} enabled=no
+      with_items: 
+        - nginx
+        - pacemaker
+
+    - name: Generates corosync key
+      become: true
+      become_user: root
+      command: corosync-keygen
+      args:
+        creates: /etc/corosync/authkey
+      when: inventory_hostname == groups[pacemaker_corosync_group][0]
+      register: __corosync_authkey_created
+      notify: Restart corosync
+    
+    - name: Copy authkey to other nodes
+      synchronize: src=/etc/corosync/authkey dest=/etc/corosync/authkey
+      delegate_to:  "{{ groups[pacemaker_corosync_group][0] }}"
+      when: inventory_hostname != groups[pacemaker_corosync_group][0]
+      notify: Restart corosync
+
+    - name: Copy authkey to other nodes
+      synchronize: src=/etc/corosync/authkey dest=/etc/corosync/authkey
+      delegate_to:  "{{ groups[pacemaker_corosync_group][0] }}"
+      when: inventory_hostname != groups[pacemaker_corosync_group][0]
+      notify: Restart corosync
+    
+    - name: Chowns authkeys
+      file:
+        path: /etc/corosync/authkey
+        mode: 0400
+        owner: root
+      notify: Restart corosync
+
+    - name: Creates corosync config
+      template:
+        src: corosync.conf.j2
+        dest: /etc/corosync/corosync.conf
+        mode: 0400
+        owner: root
+      notify: Restart corosync
+    
+  handlers:
+    - name: Restart corosync
+      service:
+        name: "{{ item }}"
+        state: restarted
+      with_items:
+        - corosync
+        - pacemaker
+            

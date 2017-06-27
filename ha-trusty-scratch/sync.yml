@@ -1,0 +1,10 @@
+---
+- hosts: 192.168.222.202
+
+  tasks:
+  - name: Copy authkey 201 to 202
+    synchronize:
+        src: /etc/passwd 
+        dest: /tmp/passwd-sync
+    delegate_to:  192.168.222.201
+

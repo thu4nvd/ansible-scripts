@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: root
+  vars: 
+    pacemaker_corosync_group: cluster
+    pacemaker_corosync_ring_interface: 192.168.222.0
+  roles:
+   - pacemaker 

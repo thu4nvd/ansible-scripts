@@ -1,0 +1,1 @@
+ansible-playbook -i path/to/custom-inventory lamp.yml

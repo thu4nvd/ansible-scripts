@@ -1,0 +1,9 @@
+[cluster]
+192.168.222.201
+192.168.222.202
+
+
+[cluster:vars]
+#ansible_ssh_user=vagrant
+ansible_ssh_user=root
+#ansible_ssh_private_key_file=/home/thuanvd/.vagrant.d/insecure_private_key

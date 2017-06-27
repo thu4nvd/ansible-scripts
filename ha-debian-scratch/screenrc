@@ -1,0 +1,7 @@
+sessionname	ssh
+term vt100
+hardstatus alwayslastline "%{= d}%{g}{HOST}%L>%1`%? %?%{.g}%u%? %-18=%?%{m} %{k}%-=%{y}%-w%{r}%n %t%{y}%+w %{k}%{c}%c"
+setenv PROMPT_COMMAND /bin/true
+
+screen -t node01 ssh root@node01
+screen -t node02 ssh root@node02
